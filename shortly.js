@@ -6,7 +6,7 @@ var db = require('./app/config');
 var Users = require('./app/collections/users');
 var User = require('./app/models/user');
 var Links = require('./app/collections/links');
-var Link = require('./app/models/link');
+var Link = require('./app/models/links');
 var Click = require('./app/models/click');
 
 var app = express();
@@ -23,6 +23,14 @@ app.get('/', function(req, res) {
   res.render('index');
 });
 
+app.get('/login', function(req, res){ // added login functionality
+  res.render('login');
+});
+
+app.get('/signup', function(req, res){ // added signup functionality
+  res.render('signup');
+});
+
 app.get('/create', function(req, res) {
   res.render('index');
 });
@@ -30,7 +38,7 @@ app.get('/create', function(req, res) {
 app.get('/links', function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
-  })
+  });
 });
 
 app.post('/links', function(req, res) {
