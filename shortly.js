@@ -36,7 +36,8 @@ app.get('/create', function(req, res) {
 });
 
 app.get('/links', function(req, res) {
-  Links.reset().fetch().then(function(links) {
+  var userId = Users.at(0).get('id');
+  Links.reset().fetch({"user_id": userId}).then(function(links) {
     res.send(200, links.models);
   });
 });
@@ -62,10 +63,12 @@ app.post('/links', function(req, res) {
         var link = new Link({
           url: uri,
           title: title,
-          base_url: req.headers.origin
+          base_url: req.headers.origin,
+          user_id: Users.at(0).get('id')
         });
 
         link.save().then(function(newLink) {
+          console.log(newLink);
           Links.add(newLink);
           res.send(200, newLink);
         });
@@ -80,6 +83,7 @@ app.post('/links', function(req, res) {
 app.post('/signup', function(req, res) {
   var name = req.body.username;
   var pword = req.body.password;
+  Users.reset();
 
   new User({ username: name }).fetch().then(function(found) {
     if (found) {
@@ -89,7 +93,7 @@ app.post('/signup', function(req, res) {
 
       var user = new User({
         username: name,
-        password: pword
+        password: pword,
       });
 
       user.save().then(function(newUser){
@@ -104,12 +108,13 @@ app.post('/signup', function(req, res) {
 app.post('/login', function(req, res) {
   var name = req.body.username;
   var pword = req.body.password;
-
+  Users.reset();
   new User({
     username: name,
     password: pword
   }).fetch().then(function(found) {
-    if (found) {
+    if (found) { // if input user is found in database
+      Users.add(found); // add user to users collection
       res.redirect('/create');
     } else {
       res.redirect('/login');

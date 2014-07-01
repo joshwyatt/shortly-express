@@ -40,7 +40,7 @@ db.knex.schema.hasTable('clicks').then(function(exists) {
       click.integer('user_id');
       click.timestamps();
     }).then(function (table) {
-      console.log('Created Table', table);
+      console.log('Created Link', click);
     });
   }
 });
