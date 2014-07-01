@@ -77,9 +77,35 @@ app.post('/links', function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
+app.post('/signup', function(req, res) {
+  var name = req.body.username;
+  var password = req.body.password;
 
+  if (req.body.username.length > 50 || req.body.password.length){
+    return res.send(404);
+  }
 
+  new User({ username: name }).fetch().then(function(found) {
+    if (found) {
+      res.send(404, function(){
+        throw new Error('Username already exists');
+      });
+    } else {
 
+        var user = new User({
+          username: name,
+          title: title,
+          base_url: req.headers.origin
+        });
+
+        link.save().then(function(newLink) {
+          Links.add(newLink);
+          res.send(200, newLink);
+        });
+      });
+    }
+  });
+});
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
 // assume the route is a short code and try and handle it here.
