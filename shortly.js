@@ -6,7 +6,7 @@ var db = require('./app/config');
 var Users = require('./app/collections/users');
 var User = require('./app/models/user');
 var Links = require('./app/collections/links');
-var Link = require('./app/models/links');
+var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 
 var app = express();
@@ -20,7 +20,7 @@ app.configure(function() {
 });
 
 app.get('/', function(req, res) {
-  res.render('index');
+  res.render('login');
 });
 
 app.get('/login', function(req, res){ // added login functionality
@@ -79,30 +79,40 @@ app.post('/links', function(req, res) {
 /************************************************************/
 app.post('/signup', function(req, res) {
   var name = req.body.username;
-  var password = req.body.password;
-
-  if (req.body.username.length > 50 || req.body.password.length){
-    return res.send(404);
-  }
+  var pword = req.body.password;
 
   new User({ username: name }).fetch().then(function(found) {
     if (found) {
-      res.send(404, function(){
-        throw new Error('Username already exists');
-      });
+      res.redirect('/signup');
+
     } else {
 
-        var user = new User({
-          username: name,
-          title: title,
-          base_url: req.headers.origin
-        });
-
-        link.save().then(function(newLink) {
-          Links.add(newLink);
-          res.send(200, newLink);
-        });
+      var user = new User({
+        username: name,
+        password: pword
       });
+
+      user.save().then(function(newUser){
+        Users.add(newUser);
+        res.redirect('/create');
+      });
+
+    }
+  });
+});
+
+app.post('/login', function(req, res) {
+  var name = req.body.username;
+  var pword = req.body.password;
+
+  new User({
+    username: name,
+    password: pword
+  }).fetch().then(function(found) {
+    if (found) {
+      res.redirect('/create');
+    } else {
+      res.redirect('/login');
     }
   });
 });
