@@ -1,6 +1,7 @@
 var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
+var bcrypt = require('bcrypt-nodejs');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -15,7 +16,9 @@ app.configure(function() {
   app.set('views', __dirname + '/views');
   app.set('view engine', 'ejs');
   app.use(partials());
-  app.use(express.bodyParser())
+  app.use(express.cookieParser());
+  app.use(express.cookieSession({secret: 'password'}));
+  app.use(express.bodyParser());
   app.use(express.static(__dirname + '/public'));
 });
 
@@ -83,7 +86,7 @@ app.post('/links', function(req, res) {
 app.post('/signup', function(req, res) {
   var name = req.body.username;
   var pword = req.body.password;
-  Users.reset();
+  // Users.reset();
 
   new User({ username: name }).fetch().then(function(found) {
     if (found) {
@@ -91,15 +94,18 @@ app.post('/signup', function(req, res) {
 
     } else {
 
-      var user = new User({
-        username: name,
-        password: pword,
+      bcrypt.hash(pword, null, null, function(err, hash){
+        var user = new User({
+          username: name,
+          password: hash,
+        });
+        user.save().then(function(newUser){
+          Users.add(newUser);
+          res.redirect('/create');
+        });
       });
 
-      user.save().then(function(newUser){
-        Users.add(newUser);
-        res.redirect('/create');
-      });
+
 
     }
   });
